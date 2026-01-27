@@ -5,8 +5,21 @@
   "main": "dist/index.js",
   "browser": "dist/index.browser.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "browser": "./dist/index.browser.js",
+      "default": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/x1-labs/ts-logging-common.git",
+    "directory": "packages/logging"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "bun run build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"src/**/*.ts\" --fix",
     "format": "prettier --write \"src/**/*.ts\"",
