@@ -1,6 +1,6 @@
 {
   "name": "@x1-labs/logging-express",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Express pino-http logging middleware",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
