@@ -1,12 +1,15 @@
 {
   "private": true,
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "build": "bun run --filter '*' build",
     "typecheck": "bun run --filter '*' typecheck",
     "lint": "eslint \"packages/*/src/**/*.ts\" --fix",
     "format": "prettier --write \"packages/*/src/**/*.ts\"",
-    "check": "bun run format && bun run lint && bun run typecheck"
+    "check": "bun run format && bun run lint && bun run typecheck",
+    "publish-all": "bun run build && npm publish --workspaces --access public"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",

@@ -4,11 +4,11 @@ Shared pino-based logging packages for X1 Labs TypeScript services.
 
 ## Packages
 
-| Package | Description | Peer Dependencies |
-|---------|-------------|-------------------|
-| [`@x1-labs/logging`](packages/logging/) | Pino logger factory (Node.js + browser) | `pino-pretty` (optional) |
-| [`@x1-labs/logging-nestjs`](packages/logging-nestjs/) | NestJS integration module | `nestjs-pino`, `@nestjs/common`, `pino-pretty` (optional) |
-| [`@x1-labs/logging-express`](packages/logging-express/) | Express pino-http middleware | `express`, `pino-http`, `pino-pretty` (optional) |
+| Package                                                 | Description                             | Peer Dependencies                                         |
+|---------------------------------------------------------|-----------------------------------------|-----------------------------------------------------------|
+| [`@x1-labs/logging`](packages/logging/)                 | Pino logger factory (Node.js + browser) | `pino-pretty` (optional)                                  |
+| [`@x1-labs/logging-nestjs`](packages/logging-nestjs/)   | NestJS integration module               | `nestjs-pino`, `@nestjs/common`, `pino-pretty` (optional) |
+| [`@x1-labs/logging-express`](packages/logging-express/) | Express pino-http middleware            | `express`, `pino-http`, `pino-pretty` (optional)          |
 
 ## Installation
 
@@ -64,11 +64,11 @@ export class AppModule {}
 
 All packages share the same environment-driven defaults:
 
-| Variable | Effect | Default |
-|----------|--------|---------|
-| `LOG_LEVEL` | Set log level (`trace`, `debug`, `info`, `warn`, `error`) | `info` |
-| `LOG_FORMAT` | Set to `json` for structured JSON output | pretty (pino-pretty) |
-| `NODE_ENV` | When `development`, default level becomes `debug` | — |
+| Variable     | Effect                                                    | Default              |
+|--------------|-----------------------------------------------------------|----------------------|
+| `LOG_LEVEL`  | Set log level (`trace`, `debug`, `info`, `warn`, `error`) | `info`               |
+| `LOG_FORMAT` | Set to `json` for structured JSON output                  | pretty (pino-pretty) |
+| `NODE_ENV`   | When `development`, default level becomes `debug`         | —                    |
 
 Options passed to `createLogger()`, `createExpressLogger()`, or `createNestLoggerModule()` override environment variables.
 
@@ -89,6 +89,7 @@ No configuration needed — `import { createLogger } from '@x1-labs/logging'` wo
 bun install              # Install dependencies
 bun run build            # Build all packages
 bun run check            # Format + lint + typecheck
+bun run publish-all      # Build + publish all packages to npm
 ```
 
 ## License
