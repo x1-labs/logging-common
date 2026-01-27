@@ -1,0 +1,30 @@
+{
+  "name": "@x1-labs/logging",
+  "version": "0.1.0",
+  "description": "Shared pino logging library",
+  "main": "dist/index.js",
+  "browser": "dist/index.browser.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint \"src/**/*.ts\" --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "check": "bun run lint && bun run typecheck && bun run format --check"
+  },
+  "dependencies": {
+    "pino": "^10.3.0"
+  },
+  "peerDependencies": {
+    "pino-pretty": "^13.0.0"
+  },
+  "peerDependenciesMeta": {
+    "pino-pretty": {
+      "optional": true
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT"
+}
