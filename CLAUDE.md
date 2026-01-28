@@ -18,6 +18,8 @@ bun run typecheck    # Type check all packages
 bun run lint         # ESLint with auto-fix across all packages
 bun run format       # Prettier across all packages
 bun run check        # Run format + lint + typecheck together
+bun run bump 0.1.5   # Bump all package versions to specified version
+bun run publish-all  # Build + publish all packages to npm
 ```
 
 No test framework is configured yet. Each package's `tsconfig.build.json` excludes `**/*.spec.ts` in anticipation of future tests.

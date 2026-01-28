@@ -92,6 +92,7 @@ No configuration needed — `import { createLogger } from '@x1-labs/logging'` wo
 bun install              # Install dependencies
 bun run build            # Build all packages
 bun run check            # Format + lint + typecheck
+bun run bump 0.1.5       # Bump all package versions
 bun run publish-all      # Build + publish all packages to npm
 ```
 
