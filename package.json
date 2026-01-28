@@ -9,6 +9,7 @@
     "lint": "eslint \"packages/*/src/**/*.ts\" --fix",
     "format": "prettier --write \"packages/*/src/**/*.ts\"",
     "check": "bun run format && bun run lint && bun run typecheck",
+    "bump": "./scripts/bump-version.sh",
     "publish-all": "bun run build && npm publish --workspaces --access public"
   },
   "devDependencies": {
