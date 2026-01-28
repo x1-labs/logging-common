@@ -1,7 +1,7 @@
 import type { IncomingMessage } from 'http';
 import pinoHttp from 'pino-http';
 import type { Options as PinoHttpOptions, HttpLogger } from 'pino-http';
-import { resolveLogLevel } from '@x1-labs/logging';
+import { resolveLogLevel, resolveBase } from '@x1-labs/logging';
 import type { CreateLoggerOptions } from '@x1-labs/logging';
 
 export interface CreateExpressLoggerOptions extends CreateLoggerOptions {
@@ -20,9 +20,11 @@ export function createExpressLogger(
   const json = options.json ?? process.env.LOG_FORMAT === 'json';
   const autoLogging = options.autoLogging ?? true;
   const forwardedIp = options.forwardedIp ?? true;
+  const base = resolveBase();
 
   const httpOptions: PinoHttpOptions = {
     level,
+    ...(base !== undefined ? { base } : {}),
     autoLogging,
     formatters: {
       level: (label: string) => ({ level: label.toUpperCase() }),

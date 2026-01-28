@@ -1,7 +1,7 @@
 import type { IncomingMessage } from 'http';
 import type { DynamicModule } from '@nestjs/common';
 import { LoggerModule } from 'nestjs-pino';
-import { resolveLogLevel } from '@x1-labs/logging';
+import { resolveLogLevel, resolveBase } from '@x1-labs/logging';
 import type { CreateLoggerOptions } from '@x1-labs/logging';
 
 export interface CreateNestLoggerModuleOptions extends CreateLoggerOptions {
@@ -16,9 +16,11 @@ export function createNestLoggerModule(
   const json = options.json ?? process.env.LOG_FORMAT === 'json';
   const httpLogging = options.httpLogging ?? true;
   const forwardedIp = options.forwardedIp ?? true;
+  const base = resolveBase();
 
   const pinoHttp = {
     level,
+    ...(base !== undefined ? { base } : {}),
     autoLogging: httpLogging,
     formatters: {
       level: (label: string) => ({ level: label.toUpperCase() }),

@@ -1,6 +1,7 @@
 import pino from 'pino';
 import type { LoggerOptions, Logger } from 'pino';
 import { resolveLogLevel } from './level';
+import { resolveBase } from './base';
 
 export interface CreateLoggerOptions {
   level?: string;
@@ -17,9 +18,11 @@ function isJsonOutput(override?: boolean): boolean {
 export function createLogger(options: CreateLoggerOptions = {}): Logger {
   const level = resolveLogLevel(options.level);
   const json = isJsonOutput(options.json);
+  const base = resolveBase();
 
   const opts: LoggerOptions = {
     level,
+    ...(base !== undefined ? { base } : {}),
     formatters: {
       level: (label) => ({ level: label.toUpperCase() }),
     },
