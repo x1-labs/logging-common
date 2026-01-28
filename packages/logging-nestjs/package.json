@@ -1,6 +1,6 @@
 {
   "name": "@x1-labs/logging-nestjs",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "NestJS pino logging integration",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
