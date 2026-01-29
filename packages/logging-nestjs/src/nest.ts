@@ -1,7 +1,12 @@
 import type { IncomingMessage } from 'http';
 import type { DynamicModule } from '@nestjs/common';
 import { LoggerModule } from 'nestjs-pino';
-import { resolveLogLevel, resolveBase } from '@x1-labs/logging';
+import {
+  resolveLogLevel,
+  resolveBase,
+  resolveLogFormat,
+  resolveTransport,
+} from '@x1-labs/logging';
 import type { CreateLoggerOptions } from '@x1-labs/logging';
 
 export interface CreateNestLoggerModuleOptions extends CreateLoggerOptions {
@@ -13,7 +18,8 @@ export function createNestLoggerModule(
   options: CreateNestLoggerModuleOptions = {},
 ): DynamicModule {
   const level = resolveLogLevel(options.level);
-  const json = options.json ?? process.env.LOG_FORMAT === 'json';
+  const format = resolveLogFormat(options.format ?? options.json);
+  const transport = resolveTransport(format);
   const httpLogging = options.httpLogging ?? true;
   const forwardedIp = options.forwardedIp ?? true;
   const base = resolveBase();
@@ -35,9 +41,7 @@ export function createNestLoggerModule(
           }),
         }
       : {}),
-    transport: !json
-      ? { target: 'pino-pretty', options: { singleLine: true } }
-      : undefined,
+    transport,
     ...options.pinoOptions,
   };
 

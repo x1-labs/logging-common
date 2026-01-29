@@ -1,7 +1,12 @@
 import type { IncomingMessage } from 'http';
 import pinoHttp from 'pino-http';
 import type { Options as PinoHttpOptions, HttpLogger } from 'pino-http';
-import { resolveLogLevel, resolveBase } from '@x1-labs/logging';
+import {
+  resolveLogLevel,
+  resolveBase,
+  resolveLogFormat,
+  resolveTransport,
+} from '@x1-labs/logging';
 import type { CreateLoggerOptions } from '@x1-labs/logging';
 
 export interface CreateExpressLoggerOptions extends CreateLoggerOptions {
@@ -17,7 +22,8 @@ export function createExpressLogger(
   options: CreateExpressLoggerOptions = {},
 ): HttpLogger {
   const level = resolveLogLevel(options.level);
-  const json = options.json ?? process.env.LOG_FORMAT === 'json';
+  const format = resolveLogFormat(options.format ?? options.json);
+  const transport = resolveTransport(format);
   const autoLogging = options.autoLogging ?? true;
   const forwardedIp = options.forwardedIp ?? true;
   const base = resolveBase();
@@ -30,9 +36,7 @@ export function createExpressLogger(
       level: (label: string) => ({ level: label.toUpperCase() }),
     },
     ...(options.name ? { name: options.name } : {}),
-    ...(!json
-      ? { transport: { target: 'pino-pretty', options: { singleLine: true } } }
-      : {}),
+    ...(transport ? { transport } : {}),
     ...(forwardedIp
       ? {
           customProps: (req: IncomingMessage) => ({

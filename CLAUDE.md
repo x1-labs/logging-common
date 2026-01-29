@@ -30,7 +30,8 @@ No test framework is configured yet. Each package's `tsconfig.build.json` exclud
 
 - **`level.ts`** — `resolveLogLevel()`: resolves log level from explicit override → `LOG_LEVEL` env var → `'debug'` if `NODE_ENV=development` → `'info'` default. Normalizes `'verbose'` to `'trace'`.
 - **`base.ts`** — `resolveBase()`: resolves Pino `base` option from `LOG_OMIT_FIELDS` env var. Defaults to omitting `pid,hostname` (K8s-friendly). Set to `none` to include all fields.
-- **`logger.ts`** — `createLogger()`: Pino logger factory. Supports custom level, name, JSON toggle, and arbitrary Pino options. Enables `pino-pretty` when not in JSON mode. Respects `LOG_FORMAT=json` and `LOG_OMIT_FIELDS` env vars.
+- **`format.ts`** — `resolveLogFormat()`: resolves log format from explicit override → `LOG_FORMAT` env var → `'pretty'` if `NODE_ENV=development` → `'json'` default. Supports `json`, `logfmt`, and `pretty`.
+- **`logger.ts`** — `createLogger()`: Pino logger factory. Supports custom level, name, format, and arbitrary Pino options. Respects `LOG_FORMAT` and `LOG_OMIT_FIELDS` env vars.
 
 ### `packages/logging-nestjs/` — NestJS Integration
 
@@ -39,7 +40,7 @@ No test framework is configured yet. Each package's `tsconfig.build.json` exclud
 
 ### `packages/logging-express/` — Express Integration
 
-- **`express.ts`** — `createExpressLogger()`: returns `pino-http` middleware for Express apps. Supports custom level, JSON toggle, auto-logging, forwarded IP extraction, and arbitrary pino/pino-http options.
+- **`express.ts`** — `createExpressLogger()`: returns `pino-http` middleware for Express apps. Supports custom level, format, auto-logging, forwarded IP extraction, and arbitrary pino/pino-http options.
 - Imports `resolveLogLevel`, `resolveBase`, and `CreateLoggerOptions` from `@x1-labs/logging`.
 
 ## Key Design Decisions
@@ -47,7 +48,7 @@ No test framework is configured yet. Each package's `tsconfig.build.json` exclud
 - **Three-package split**: projects without a framework depend only on `@x1-labs/logging`; NestJS projects add `@x1-labs/logging-nestjs`; Express projects add `@x1-labs/logging-express`.
 - **Workspace linking**: `@x1-labs/logging-nestjs` depends on `@x1-labs/logging` via `workspace:*`.
 - **Shared tooling**: eslint, prettier, typescript, and all NestJS/pino dev dependencies live in the root `package.json`. Individual packages only declare their runtime/peer dependencies.
-- **Environment-driven config**: log level via `LOG_LEVEL`, format via `LOG_FORMAT=json`, base field omission via `LOG_OMIT_FIELDS` (defaults to `pid,hostname`), dev detection via `NODE_ENV=development`.
+- **Environment-driven config**: log level via `LOG_LEVEL`, format via `LOG_FORMAT` (`json`, `logfmt`, or `pretty`), base field omission via `LOG_OMIT_FIELDS` (defaults to `pid,hostname`), dev detection via `NODE_ENV=development`.
 - **Output**: CommonJS (ES2022 target), with declaration files. Each package emits to its own `dist/`.
 
 ## TypeScript

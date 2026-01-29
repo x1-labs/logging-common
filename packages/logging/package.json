@@ -29,10 +29,14 @@
     "pino": "^10.3.0"
   },
   "peerDependencies": {
-    "pino-pretty": "^13.0.0"
+    "pino-pretty": "^13.0.0",
+    "pino-logfmt": "^1.0.0"
   },
   "peerDependenciesMeta": {
     "pino-pretty": {
+      "optional": true
+    },
+    "pino-logfmt": {
       "optional": true
     }
   },

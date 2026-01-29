@@ -2,22 +2,23 @@ import pino from 'pino';
 import type { LoggerOptions, Logger } from 'pino';
 import { resolveLogLevel } from './level';
 import { resolveBase } from './base';
+import { resolveLogFormat, resolveTransport } from './format';
+import type { LogFormat } from './format';
 
 export interface CreateLoggerOptions {
   level?: string;
+  /** @deprecated Use `format` instead */
   json?: boolean;
+  /** Log format: 'json', 'logfmt', or 'pretty' */
+  format?: LogFormat;
   name?: string;
   pinoOptions?: LoggerOptions;
 }
 
-function isJsonOutput(override?: boolean): boolean {
-  if (override !== undefined) return override;
-  return process.env.LOG_FORMAT === 'json';
-}
-
 export function createLogger(options: CreateLoggerOptions = {}): Logger {
   const level = resolveLogLevel(options.level);
-  const json = isJsonOutput(options.json);
+  const format = resolveLogFormat(options.format ?? options.json);
+  const transport = resolveTransport(format);
   const base = resolveBase();
 
   const opts: LoggerOptions = {
@@ -33,11 +34,8 @@ export function createLogger(options: CreateLoggerOptions = {}): Logger {
     opts.name = options.name;
   }
 
-  if (!json) {
-    opts.transport = {
-      target: 'pino-pretty',
-      options: { singleLine: true },
-    };
+  if (transport) {
+    opts.transport = transport;
   }
 
   return pino(opts);

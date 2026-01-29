@@ -1,0 +1,41 @@
+import type { TransportSingleOptions } from 'pino';
+
+export type LogFormat = 'json' | 'logfmt' | 'pretty';
+
+/**
+ * Resolves the log format from explicit override or LOG_FORMAT env var.
+ * - 'json': structured JSON output (default for production)
+ * - 'logfmt': key=value format, compatible with Loki/Grafana
+ * - 'pretty': human-readable colored output (default for development)
+ */
+export function resolveLogFormat(override?: LogFormat | boolean): LogFormat {
+  // Handle legacy boolean json option
+  if (override === true) return 'json';
+  if (override === false) return 'pretty';
+  if (override !== undefined) return override;
+
+  const envFormat = process.env.LOG_FORMAT?.toLowerCase();
+  if (envFormat === 'json') return 'json';
+  if (envFormat === 'logfmt') return 'logfmt';
+  if (envFormat === 'pretty') return 'pretty';
+
+  // Default: pretty for dev, json for production
+  return process.env.NODE_ENV === 'development' ? 'pretty' : 'json';
+}
+
+/**
+ * Returns the pino transport configuration for the given format.
+ * Returns undefined for JSON (native pino output).
+ */
+export function resolveTransport(
+  format: LogFormat,
+): TransportSingleOptions | undefined {
+  switch (format) {
+    case 'json':
+      return undefined;
+    case 'logfmt':
+      return { target: 'pino-logfmt' };
+    case 'pretty':
+      return { target: 'pino-pretty', options: { singleLine: true } };
+  }
+}
