@@ -24,6 +24,15 @@ export function resolveLogFormat(override?: LogFormat | boolean): LogFormat {
 }
 
 /**
+ * Resolves whether to flatten nested objects in logfmt output.
+ * Controlled by LOG_FLATTEN_NESTED env var. Enabled by default.
+ */
+export function resolveFlattenNestedObjects(): boolean {
+  const env = process.env.LOG_FLATTEN_NESTED?.toLowerCase();
+  return !(env === 'false' || env === '0');
+}
+
+/**
  * Returns the pino transport configuration for the given format.
  * Returns undefined for JSON (native pino output).
  */
@@ -34,7 +43,10 @@ export function resolveTransport(
     case 'json':
       return undefined;
     case 'logfmt':
-      return { target: 'pino-logfmt', options: { flattenNestedObjects: true } };
+      return {
+        target: 'pino-logfmt',
+        options: { flattenNestedObjects: resolveFlattenNestedObjects() },
+      };
     case 'pretty':
       return { target: 'pino-pretty', options: { singleLine: true } };
   }

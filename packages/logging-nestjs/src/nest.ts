@@ -45,5 +45,8 @@ export function createNestLoggerModule(
     ...options.pinoOptions,
   };
 
-  return LoggerModule.forRoot({ pinoHttp }) as DynamicModule;
+  return LoggerModule.forRoot({
+    pinoHttp,
+    renameContext: 'name',
+  }) as DynamicModule;
 }
