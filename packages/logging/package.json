@@ -1,6 +1,6 @@
 {
   "name": "@x1-labs/logging",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Shared pino logging library",
   "main": "dist/index.js",
   "browser": "dist/index.browser.js",
@@ -26,19 +26,9 @@
     "check": "bun run lint && bun run typecheck && bun run format --check"
   },
   "dependencies": {
-    "pino": "^10.3.0"
-  },
-  "peerDependencies": {
-    "pino-pretty": "^13.0.0",
-    "pino-logfmt": "^1.0.0"
-  },
-  "peerDependenciesMeta": {
-    "pino-pretty": {
-      "optional": true
-    },
-    "pino-logfmt": {
-      "optional": true
-    }
+    "pino": "^10.3.0",
+    "pino-logfmt": "^1.0.0",
+    "pino-pretty": "^13.0.0"
   },
   "files": [
     "dist"

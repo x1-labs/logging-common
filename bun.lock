@@ -27,22 +27,16 @@
     },
     "packages/logging": {
       "name": "@x1-labs/logging",
-      "version": "0.1.6",
+      "version": "0.1.7",
       "dependencies": {
         "pino": "^10.3.0",
-      },
-      "peerDependencies": {
         "pino-logfmt": "^1.0.0",
         "pino-pretty": "^13.0.0",
       },
-      "optionalPeers": [
-        "pino-logfmt",
-        "pino-pretty",
-      ],
     },
     "packages/logging-express": {
       "name": "@x1-labs/logging-express",
-      "version": "0.1.6",
+      "version": "0.1.7",
       "dependencies": {
         "@x1-labs/logging": "workspace:*",
       },
@@ -57,7 +51,7 @@
     },
     "packages/logging-nestjs": {
       "name": "@x1-labs/logging-nestjs",
-      "version": "0.1.6",
+      "version": "0.1.7",
       "dependencies": {
         "@x1-labs/logging": "^0.1.6",
       },
