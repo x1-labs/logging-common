@@ -34,7 +34,7 @@ export function resolveTransport(
     case 'json':
       return undefined;
     case 'logfmt':
-      return { target: 'pino-logfmt' };
+      return { target: 'pino-logfmt', options: { flattenNestedObjects: true } };
     case 'pretty':
       return { target: 'pino-pretty', options: { singleLine: true } };
   }
