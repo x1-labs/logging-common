@@ -44,10 +44,13 @@ export function resolveTransport(
       return undefined;
     case 'logfmt':
       return {
-        target: 'pino-logfmt',
+        target: require.resolve('./logfmt-transport.js'),
         options: { flattenNestedObjects: resolveFlattenNestedObjects() },
       };
     case 'pretty':
-      return { target: 'pino-pretty', options: { singleLine: true } };
+      return {
+        target: require.resolve('pino-pretty'),
+        options: { singleLine: true },
+      };
   }
 }
