@@ -18,11 +18,17 @@ function stringify(data: LogObject): string {
       value = String(raw);
     }
 
+    const hasNewlines = value.includes('\n') || value.includes('\r');
     const needsQuoting = value.includes(' ') || value.includes('=');
     const needsEscaping = value.includes('"') || value.includes('\\');
 
+    // Escape backslashes and quotes first
     if (needsEscaping) value = value.replace(/["\\]/g, '\\$&');
-    if (needsQuoting || needsEscaping) value = '"' + value + '"';
+    // Then escape newlines to keep log on single line
+    if (hasNewlines) {
+      value = value.replace(/\r\n/g, '\\n').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+    }
+    if (needsQuoting || needsEscaping || hasNewlines) value = '"' + value + '"';
     if (value === '' && raw != null) value = '""';
 
     line += key + '=' + value + ' ';
@@ -105,6 +111,32 @@ describe('stringify', () => {
 
   test('handles numeric values', () => {
     expect(stringify({ count: 123, rate: 3.14 })).toBe('count=123 rate=3.14');
+  });
+
+  test('escapes newlines', () => {
+    expect(stringify({ msg: 'line1\nline2' })).toBe('msg="line1\\nline2"');
+  });
+
+  test('escapes carriage returns', () => {
+    expect(stringify({ msg: 'line1\rline2' })).toBe('msg="line1\\rline2"');
+  });
+
+  test('escapes CRLF', () => {
+    expect(stringify({ msg: 'line1\r\nline2' })).toBe('msg="line1\\nline2"');
+  });
+
+  test('escapes stack traces', () => {
+    const stack = 'Error: failed\n  at foo()\n  at bar()';
+    const result = stringify({ err_stack: stack });
+    expect(result).toBe('err_stack="Error: failed\\n  at foo()\\n  at bar()"');
+    expect(result).not.toContain('\n');
+  });
+
+  test('escapes newlines with quotes and backslashes', () => {
+    const value = 'Error: "bad"\n  at C:\\path';
+    const result = stringify({ msg: value });
+    expect(result).toBe('msg="Error: \\"bad\\"\\n  at C:\\\\path"');
+    expect(result).not.toContain('\n');
   });
 });
 

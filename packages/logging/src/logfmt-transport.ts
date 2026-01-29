@@ -23,11 +23,17 @@ function stringify(data: LogObject): string {
       value = String(raw);
     }
 
+    const hasNewlines = value.includes('\n') || value.includes('\r');
     const needsQuoting = value.includes(' ') || value.includes('=');
     const needsEscaping = value.includes('"') || value.includes('\\');
 
+    // Escape backslashes and quotes first
     if (needsEscaping) value = value.replace(/["\\]/g, '\\$&');
-    if (needsQuoting || needsEscaping) value = '"' + value + '"';
+    // Then escape newlines to keep log on single line
+    if (hasNewlines) {
+      value = value.replace(/\r\n/g, '\\n').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+    }
+    if (needsQuoting || needsEscaping || hasNewlines) value = '"' + value + '"';
     if (value === '' && raw != null) value = '""';
 
     line += key + '=' + value + ' ';
@@ -66,10 +72,11 @@ function flattenObject(
  * Reorder object keys to: time, level, msg, ...rest
  */
 function reorderKeys(obj: LogObject): LogObject {
-  const { time, level, msg, ...rest } = obj;
+  const { time, level, name, msg, ...rest } = obj;
   return {
     ...(time !== undefined && { time }),
     ...(level !== undefined && { level }),
+    ...(name !== undefined && { name }),
     ...(msg !== undefined && { msg }),
     ...rest,
   };
