@@ -4,9 +4,9 @@ export type LogFormat = 'json' | 'logfmt' | 'pretty';
 
 /**
  * Resolves the log format from explicit override or LOG_FORMAT env var.
- * - 'json': structured JSON output (default for production)
+ * - 'json': structured JSON output
  * - 'logfmt': key=value format, compatible with Loki/Grafana
- * - 'pretty': human-readable colored output (default for development)
+ * - 'pretty': human-readable colored output (default)
  */
 export function resolveLogFormat(override?: LogFormat | boolean): LogFormat {
   // Handle legacy boolean json option
@@ -19,8 +19,7 @@ export function resolveLogFormat(override?: LogFormat | boolean): LogFormat {
   if (envFormat === 'logfmt') return 'logfmt';
   if (envFormat === 'pretty') return 'pretty';
 
-  // Default: pretty for dev, json for production
-  return process.env.NODE_ENV === 'development' ? 'pretty' : 'json';
+  return 'pretty';
 }
 
 /**
