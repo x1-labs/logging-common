@@ -1,4 +1,5 @@
 import type { IncomingMessage } from 'http';
+import pino from 'pino';
 import type { DynamicModule } from '@nestjs/common';
 import { LoggerModule } from 'nestjs-pino';
 import {
@@ -28,6 +29,7 @@ export function createNestLoggerModule(
     level,
     ...(base !== undefined ? { base } : {}),
     autoLogging: httpLogging,
+    timestamp: pino.stdTimeFunctions.isoTime,
     formatters: {
       level: (label: string) => ({ level: label.toUpperCase() }),
     },

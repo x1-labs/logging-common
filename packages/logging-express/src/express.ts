@@ -1,4 +1,5 @@
 import type { IncomingMessage } from 'http';
+import pino from 'pino';
 import pinoHttp from 'pino-http';
 import type { Options as PinoHttpOptions, HttpLogger } from 'pino-http';
 import {
@@ -32,6 +33,7 @@ export function createExpressLogger(
     level,
     ...(base !== undefined ? { base } : {}),
     autoLogging,
+    timestamp: pino.stdTimeFunctions.isoTime,
     formatters: {
       level: (label: string) => ({ level: label.toUpperCase() }),
     },

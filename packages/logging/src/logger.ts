@@ -24,6 +24,7 @@ export function createLogger(options: CreateLoggerOptions = {}): Logger {
   const opts: LoggerOptions = {
     level,
     ...(base !== undefined ? { base } : {}),
+    timestamp: pino.stdTimeFunctions.isoTime,
     formatters: {
       level: (label) => ({ level: label.toUpperCase() }),
     },
