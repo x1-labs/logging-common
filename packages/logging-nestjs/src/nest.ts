@@ -7,6 +7,7 @@ import {
   resolveBase,
   resolveLogFormat,
   resolveTransport,
+  serializeError,
 } from '@x1-labs/logging';
 import type { CreateLoggerOptions } from '@x1-labs/logging';
 
@@ -45,6 +46,10 @@ export function createNestLoggerModule(
       : {}),
     transport,
     ...options.pinoOptions,
+    serializers: {
+      err: serializeError,
+      ...options.pinoOptions?.serializers,
+    },
   };
 
   return LoggerModule.forRoot({

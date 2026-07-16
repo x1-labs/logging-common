@@ -7,6 +7,7 @@ import {
   resolveBase,
   resolveLogFormat,
   resolveTransport,
+  serializeError,
 } from '@x1-labs/logging';
 import type { CreateLoggerOptions } from '@x1-labs/logging';
 
@@ -51,6 +52,11 @@ export function createExpressLogger(
       : {}),
     ...options.pinoOptions,
     ...options.pinoHttpOptions,
+    serializers: {
+      err: serializeError,
+      ...options.pinoOptions?.serializers,
+      ...options.pinoHttpOptions?.serializers,
+    },
   };
 
   return pinoHttp(httpOptions);

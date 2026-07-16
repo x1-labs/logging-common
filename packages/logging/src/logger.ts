@@ -2,6 +2,7 @@ import pino from 'pino';
 import type { LoggerOptions, Logger } from 'pino';
 import { resolveLogLevel } from './level';
 import { resolveBase } from './base';
+import { serializeError } from './error';
 import { resolveLogFormat, resolveTransport } from './format';
 import type { LogFormat } from './format';
 
@@ -29,6 +30,10 @@ export function createLogger(options: CreateLoggerOptions = {}): Logger {
       level: (label) => ({ level: label.toUpperCase() }),
     },
     ...options.pinoOptions,
+    serializers: {
+      err: serializeError,
+      ...options.pinoOptions?.serializers,
+    },
   };
 
   if (options.name) {
