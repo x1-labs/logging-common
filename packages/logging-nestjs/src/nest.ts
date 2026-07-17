@@ -6,7 +6,7 @@ import {
   resolveLogLevel,
   resolveBase,
   resolveLogFormat,
-  resolveTransport,
+  resolveDestination,
   serializeError,
 } from '@x1-labs/logging';
 import type { CreateLoggerOptions } from '@x1-labs/logging';
@@ -21,7 +21,7 @@ export function createNestLoggerModule(
 ): DynamicModule {
   const level = resolveLogLevel(options.level);
   const format = resolveLogFormat(options.format ?? options.json);
-  const transport = resolveTransport(format);
+  const destination = resolveDestination(format);
   const httpLogging = options.httpLogging ?? true;
   const forwardedIp = options.forwardedIp ?? true;
   const base = resolveBase();
@@ -44,7 +44,6 @@ export function createNestLoggerModule(
           }),
         }
       : {}),
-    transport,
     ...options.pinoOptions,
     serializers: {
       err: serializeError,
@@ -53,7 +52,7 @@ export function createNestLoggerModule(
   };
 
   return LoggerModule.forRoot({
-    pinoHttp,
+    pinoHttp: destination ? [pinoHttp, destination] : pinoHttp,
     renameContext: 'name',
   }) as DynamicModule;
 }

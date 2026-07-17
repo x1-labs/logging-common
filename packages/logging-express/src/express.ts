@@ -6,7 +6,7 @@ import {
   resolveLogLevel,
   resolveBase,
   resolveLogFormat,
-  resolveTransport,
+  resolveDestination,
   serializeError,
 } from '@x1-labs/logging';
 import type { CreateLoggerOptions } from '@x1-labs/logging';
@@ -25,7 +25,7 @@ export function createExpressLogger(
 ): HttpLogger {
   const level = resolveLogLevel(options.level);
   const format = resolveLogFormat(options.format ?? options.json);
-  const transport = resolveTransport(format);
+  const destination = resolveDestination(format);
   const autoLogging = options.autoLogging ?? true;
   const forwardedIp = options.forwardedIp ?? true;
   const base = resolveBase();
@@ -39,7 +39,6 @@ export function createExpressLogger(
       level: (label: string) => ({ level: label.toUpperCase() }),
     },
     ...(options.name ? { name: options.name } : {}),
-    ...(transport ? { transport } : {}),
     ...(forwardedIp
       ? {
           customProps: (req: IncomingMessage) => ({
@@ -59,5 +58,5 @@ export function createExpressLogger(
     },
   };
 
-  return pinoHttp(httpOptions);
+  return pinoHttp(httpOptions, destination);
 }

@@ -26,7 +26,10 @@ function stringify(data: LogObject): string {
     if (needsEscaping) value = value.replace(/["\\]/g, '\\$&');
     // Then escape newlines to keep log on single line
     if (hasNewlines) {
-      value = value.replace(/\r\n/g, '\\n').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+      value = value
+        .replace(/\r\n/g, '\\n')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r');
     }
     if (needsQuoting || needsEscaping || hasNewlines) value = '"' + value + '"';
     if (value === '' && raw != null) value = '""';

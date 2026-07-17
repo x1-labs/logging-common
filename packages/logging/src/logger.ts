@@ -3,7 +3,7 @@ import type { LoggerOptions, Logger } from 'pino';
 import { resolveLogLevel } from './level';
 import { resolveBase } from './base';
 import { serializeError } from './error';
-import { resolveLogFormat, resolveTransport } from './format';
+import { resolveLogFormat, resolveDestination } from './format';
 import type { LogFormat } from './format';
 
 export interface CreateLoggerOptions {
@@ -19,7 +19,7 @@ export interface CreateLoggerOptions {
 export function createLogger(options: CreateLoggerOptions = {}): Logger {
   const level = resolveLogLevel(options.level);
   const format = resolveLogFormat(options.format ?? options.json);
-  const transport = resolveTransport(format);
+  const destination = resolveDestination(format);
   const base = resolveBase();
 
   const opts: LoggerOptions = {
@@ -40,9 +40,6 @@ export function createLogger(options: CreateLoggerOptions = {}): Logger {
     opts.name = options.name;
   }
 
-  if (transport) {
-    opts.transport = transport;
-  }
-
-  return pino(opts);
+  // Use destination stream if provided, otherwise use default stdout
+  return destination ? pino(opts, destination) : pino(opts);
 }
