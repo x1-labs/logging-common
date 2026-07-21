@@ -1,5 +1,4 @@
 import type { IncomingMessage } from 'http';
-import pino from 'pino';
 import pinoHttp from 'pino-http';
 import type { Options as PinoHttpOptions, HttpLogger } from 'pino-http';
 import {
@@ -7,6 +6,7 @@ import {
   resolveBase,
   resolveLogFormat,
   resolveDestination,
+  resolveTimestamp,
   serializeError,
 } from '@x1-labs/logging';
 import type { CreateLoggerOptions } from '@x1-labs/logging';
@@ -25,7 +25,7 @@ export function createExpressLogger(
 ): HttpLogger {
   const level = resolveLogLevel(options.level);
   const format = resolveLogFormat(options.format ?? options.json);
-  const destination = resolveDestination(format);
+  const destination = resolveDestination(format, options.timestamp);
   const autoLogging = options.autoLogging ?? true;
   const forwardedIp = options.forwardedIp ?? true;
   const base = resolveBase();
@@ -34,7 +34,7 @@ export function createExpressLogger(
     level,
     ...(base !== undefined ? { base } : {}),
     autoLogging,
-    timestamp: pino.stdTimeFunctions.isoTime,
+    timestamp: resolveTimestamp(options.timestamp),
     formatters: {
       level: (label: string) => ({ level: label.toUpperCase() }),
     },

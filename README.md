@@ -69,6 +69,7 @@ All packages share the same environment-driven defaults:
 | `LOG_LEVEL`       | Set log level (`trace`, `debug`, `info`, `warn`, `error`) | `info`               |
 | `LOG_FORMAT`      | Set to `json` for structured JSON output                  | pretty (pino-pretty) |
 | `LOG_OMIT_FIELDS` | Comma-separated base fields to omit (e.g., `pid,hostname`) | `pid,hostname`       |
+| `LOG_TIMESTAMP`   | Set to `false` to omit timestamps from log messages       | `true`               |
 | `NODE_ENV`        | When `development`, default level becomes `debug`         | —                    |
 
 To include all default Pino fields (pid, hostname), set `LOG_OMIT_FIELDS=none`.

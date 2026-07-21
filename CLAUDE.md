@@ -48,7 +48,7 @@ No test framework is configured yet. Each package's `tsconfig.build.json` exclud
 - **Three-package split**: projects without a framework depend only on `@x1-labs/logging`; NestJS projects add `@x1-labs/logging-nestjs`; Express projects add `@x1-labs/logging-express`.
 - **Workspace linking**: `@x1-labs/logging-nestjs` depends on `@x1-labs/logging` via `workspace:*`.
 - **Shared tooling**: eslint, prettier, typescript, and all NestJS/pino dev dependencies live in the root `package.json`. Individual packages only declare their runtime/peer dependencies.
-- **Environment-driven config**: log level via `LOG_LEVEL`, format via `LOG_FORMAT` (`json`, `logfmt`, or `pretty`), base field omission via `LOG_OMIT_FIELDS` (defaults to `pid,hostname`), dev detection via `NODE_ENV=development`.
+- **Environment-driven config**: log level via `LOG_LEVEL`, format via `LOG_FORMAT` (`json`, `logfmt`, or `pretty`), base field omission via `LOG_OMIT_FIELDS` (defaults to `pid,hostname`), timestamp inclusion via `LOG_TIMESTAMP` (defaults to `true`), dev detection via `NODE_ENV=development`.
 - **Output**: CommonJS (ES2022 target), with declaration files. Each package emits to its own `dist/`.
 
 ## TypeScript

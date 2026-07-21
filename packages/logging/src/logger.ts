@@ -3,7 +3,11 @@ import type { LoggerOptions, Logger } from 'pino';
 import { resolveLogLevel } from './level';
 import { resolveBase } from './base';
 import { serializeError } from './error';
-import { resolveLogFormat, resolveDestination } from './format';
+import {
+  resolveLogFormat,
+  resolveDestination,
+  resolveTimestamp,
+} from './format';
 import type { LogFormat } from './format';
 
 export interface CreateLoggerOptions {
@@ -13,19 +17,21 @@ export interface CreateLoggerOptions {
   /** Log format: 'json', 'logfmt', or 'pretty' */
   format?: LogFormat;
   name?: string;
+  /** Include a timestamp in log messages (default: true, or LOG_TIMESTAMP env var) */
+  timestamp?: boolean;
   pinoOptions?: LoggerOptions;
 }
 
 export function createLogger(options: CreateLoggerOptions = {}): Logger {
   const level = resolveLogLevel(options.level);
   const format = resolveLogFormat(options.format ?? options.json);
-  const destination = resolveDestination(format);
+  const destination = resolveDestination(format, options.timestamp);
   const base = resolveBase();
 
   const opts: LoggerOptions = {
     level,
     ...(base !== undefined ? { base } : {}),
-    timestamp: pino.stdTimeFunctions.isoTime,
+    timestamp: resolveTimestamp(options.timestamp),
     formatters: {
       level: (label) => ({ level: label.toUpperCase() }),
     },

@@ -1,3 +1,4 @@
+import pino from 'pino';
 import type { DestinationStream } from 'pino';
 import pinoPretty from 'pino-pretty';
 
@@ -30,6 +31,28 @@ export function resolveLogFormat(override?: LogFormat | boolean): LogFormat {
 export function resolveFlattenNestedObjects(): boolean {
   const env = process.env.LOG_FLATTEN_NESTED?.toLowerCase();
   return !(env === 'false' || env === '0');
+}
+
+/**
+ * Resolves whether to include a timestamp in log messages.
+ * Explicit override → LOG_TIMESTAMP env var → enabled by default.
+ */
+export function resolveTimestampEnabled(override?: boolean): boolean {
+  if (override !== undefined) return override;
+
+  const env = process.env.LOG_TIMESTAMP?.toLowerCase();
+  return !(env === 'false' || env === '0' || env === 'off' || env === 'no');
+}
+
+/**
+ * Resolves the Pino `timestamp` option: ISO time when enabled, `false` when not.
+ */
+export function resolveTimestamp(
+  override?: boolean,
+): typeof pino.stdTimeFunctions.isoTime | false {
+  return resolveTimestampEnabled(override)
+    ? pino.stdTimeFunctions.isoTime
+    : false;
 }
 
 type LogObject = Record<string, unknown>;
@@ -143,14 +166,20 @@ function createLogfmtStream(flattenNestedObjects: boolean): DestinationStream {
  */
 export function resolveDestination(
   format: LogFormat,
+  timestamp?: boolean,
 ): DestinationStream | undefined {
+  const withTime = resolveTimestampEnabled(timestamp);
+
   switch (format) {
     case 'json':
       return undefined;
     case 'logfmt':
       return createLogfmtStream(resolveFlattenNestedObjects());
     case 'pretty':
-      return pinoPretty({ singleLine: true });
+      return pinoPretty({
+        singleLine: true,
+        ...(withTime ? {} : { ignore: 'time' }),
+      });
   }
 }
 

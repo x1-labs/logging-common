@@ -5,6 +5,8 @@ export {
   resolveLogFormat,
   resolveDestination,
   resolveTransport,
+  resolveTimestamp,
+  resolveTimestampEnabled,
 } from './format';
 export type { LogFormat } from './format';
 export { createLogger } from './logger';
