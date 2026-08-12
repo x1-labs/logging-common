@@ -8,7 +8,10 @@ export type LogFormat = 'json' | 'logfmt' | 'pretty';
  * Resolves the log format from explicit override or LOG_FORMAT env var.
  * - 'json': structured JSON output
  * - 'logfmt': key=value format, compatible with Loki/Grafana
- * - 'pretty': human-readable colored output (default)
+ * - 'pretty': human-readable colored output
+ *
+ * With neither set, the format follows who is reading: 'pretty' on an
+ * interactive terminal, 'json' anywhere else.
  */
 export function resolveLogFormat(override?: LogFormat | boolean): LogFormat {
   // Handle legacy boolean json option
@@ -21,7 +24,16 @@ export function resolveLogFormat(override?: LogFormat | boolean): LogFormat {
   if (envFormat === 'logfmt') return 'logfmt';
   if (envFormat === 'pretty') return 'pretty';
 
-  return 'pretty';
+  // A TTY means a human is watching, so colour and alignment earn their cost.
+  // Everything else -- a container, a pipe, a CI job, a systemd unit -- is read
+  // by a log collector, which wants structure and is actively hurt by ANSI
+  // escapes. Defaulting to 'pretty' meant every deployment that never thought
+  // about LOG_FORMAT shipped decoration to its aggregator.
+  //
+  // Optional chaining because process.stdout is absent in some non-node hosts.
+  // The browser entry point does not import this module, but the export is
+  // public and it is cheap to make safe.
+  return process.stdout?.isTTY ? 'pretty' : 'json';
 }
 
 /**
