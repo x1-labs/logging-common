@@ -700,10 +700,9 @@ describe('createBunLogger error handling', () => {
     });
 
     // The throw must propagate so Bun's own error handler decides the response.
-    expect(handler(new Request('http://127.0.0.1/boom'), {})).rejects.toThrow(
-      'kaboom',
-    );
-    await Bun.sleep(0);
+    await expect(
+      handler(new Request('http://127.0.0.1/boom'), {}),
+    ).rejects.toThrow('kaboom');
 
     expect(lines).toHaveLength(1);
     const line = lines[0];
@@ -727,8 +726,9 @@ describe('createBunLogger error handling', () => {
       throw new Error('kaboom');
     });
 
-    expect(handler(new Request('http://127.0.0.1/boom'), {})).rejects.toThrow();
-    await Bun.sleep(0);
+    await expect(
+      handler(new Request('http://127.0.0.1/boom'), {}),
+    ).rejects.toThrow();
 
     expect(lines[0]).not.toHaveProperty('res');
     expect(Object.keys(lines[0])).toEqual([
@@ -864,10 +864,9 @@ describe('createBunLogger autoLogging', () => {
       throw new Error('kaboom');
     });
 
-    expect(handler(new Request('http://127.0.0.1/boom'), {})).rejects.toThrow(
-      'kaboom',
-    );
-    await Bun.sleep(0);
+    await expect(
+      handler(new Request('http://127.0.0.1/boom'), {}),
+    ).rejects.toThrow('kaboom');
 
     expect(lines).toHaveLength(0);
   });
