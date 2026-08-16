@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import type { DestinationStream } from 'pino';
 import { createBunLogger } from './bun';
+import type { RequestIPProvider } from './bun';
 
 type LogLine = Record<string, unknown>;
 
@@ -117,5 +118,110 @@ describe('createBunLogger access log', () => {
     await handler(new Request('http://127.0.0.1/ok'), {});
 
     expect(seen).toBe(1);
+  });
+});
+
+/** Stands in for Bun's Server, which is the only source of the peer address. */
+function serverWithIP(address: string, port = 50740): RequestIPProvider {
+  return { requestIP: () => ({ address, port, family: 'IPv4' }) };
+}
+
+describe('createBunLogger client ip', () => {
+  test('prefers the first x-forwarded-for entry', async () => {
+    const { lines, stream } = collect();
+    const { wrapFetch } = createBunLogger({ destination: stream });
+    const handler = wrapFetch(async () => new Response('ok'));
+
+    await handler(
+      new Request('http://127.0.0.1/ok', {
+        headers: { 'x-forwarded-for': '9.9.9.9, 10.0.0.1' },
+      }),
+      serverWithIP('::ffff:127.0.0.1'),
+    );
+
+    expect(lines[0].ip).toBe('9.9.9.9');
+  });
+
+  test('falls back to the peer address when no forwarded header is present', async () => {
+    const { lines, stream } = collect();
+    const { wrapFetch } = createBunLogger({ destination: stream });
+    const handler = wrapFetch(async () => new Response('ok'));
+
+    await handler(
+      new Request('http://127.0.0.1/ok'),
+      serverWithIP('::ffff:127.0.0.1'),
+    );
+
+    expect(lines[0].ip).toBe('::ffff:127.0.0.1');
+  });
+
+  test('omits ip entirely when forwardedIp is false', async () => {
+    const { lines, stream } = collect();
+    const { wrapFetch } = createBunLogger({
+      destination: stream,
+      forwardedIp: false,
+    });
+    const handler = wrapFetch(async () => new Response('ok'));
+
+    await handler(
+      new Request('http://127.0.0.1/ok', {
+        headers: { 'x-forwarded-for': '9.9.9.9' },
+      }),
+      serverWithIP('::ffff:127.0.0.1'),
+    );
+
+    // express drops the customProps hook entirely, so the key is absent —
+    // not present-and-null.
+    expect(lines[0]).not.toHaveProperty('ip');
+  });
+
+  test('records remoteAddress and remotePort in express key order', async () => {
+    const { lines, stream } = collect();
+    const { wrapFetch } = createBunLogger({ name: 'api', destination: stream });
+    const handler = wrapFetch(async () => new Response('ok'));
+
+    await handler(
+      new Request('http://127.0.0.1/ok'),
+      serverWithIP('::ffff:127.0.0.1', 50740),
+    );
+
+    const req = lines[0].req as LogLine;
+    expect(Object.keys(req)).toEqual([
+      'id',
+      'method',
+      'url',
+      'query',
+      'params',
+      'headers',
+      'remoteAddress',
+      'remotePort',
+    ]);
+    expect(req.remoteAddress).toBe('::ffff:127.0.0.1');
+    expect(req.remotePort).toBe(50740);
+
+    expect(Object.keys(lines[0])).toEqual([
+      'level',
+      'time',
+      'name',
+      'req',
+      'ip',
+      'res',
+      'responseTime',
+      'msg',
+    ]);
+  });
+
+  test('omits remoteAddress when the server cannot supply one', async () => {
+    const { lines, stream } = collect();
+    const { wrapFetch } = createBunLogger({ destination: stream });
+    const handler = wrapFetch(async () => new Response('ok'));
+
+    await handler(new Request('http://127.0.0.1/ok'), {
+      requestIP: () => null,
+    });
+
+    const req = lines[0].req as LogLine;
+    expect(req).not.toHaveProperty('remoteAddress');
+    expect(req).not.toHaveProperty('remotePort');
   });
 });

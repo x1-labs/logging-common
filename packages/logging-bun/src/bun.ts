@@ -72,8 +72,13 @@ export function createBunLogger(
   const logger = destination ? pino(opts, destination) : pino(opts);
 
   let nextId = 1;
+  const forwardedIp = options.forwardedIp ?? true;
 
-  function serializeRequest(req: Request, id: number): LogObject {
+  function serializeRequest(
+    req: Request,
+    id: number,
+    peer: { address: string; port: number } | null,
+  ): LogObject {
     const url = new URL(req.url);
 
     // Key order here is the emitted key order, and must match pino-http's
@@ -85,7 +90,22 @@ export function createBunLogger(
       query: Object.fromEntries(url.searchParams),
       params: {},
       headers: Object.fromEntries(req.headers),
+      ...(peer !== null
+        ? { remoteAddress: peer.address, remotePort: peer.port }
+        : {}),
     };
+  }
+
+  /**
+   * Mirrors the express package's customProps hook: the first x-forwarded-for
+   * entry, falling back to the peer address.
+   */
+  function resolveIp(
+    req: Request,
+    peer: { address: string } | null,
+  ): string | undefined {
+    const forwarded = req.headers.get('x-forwarded-for');
+    return forwarded?.split(',')[0]?.trim() || peer?.address;
   }
 
   function serializeResponse(res: Response): LogObject {
@@ -102,7 +122,13 @@ export function createBunLogger(
       const start = performance.now();
       const id = nextId++;
 
-      const child = logger.child({ req: serializeRequest(req, id) });
+      const peer = server?.requestIP?.(req) ?? null;
+      const ip = forwardedIp ? resolveIp(req, peer) : undefined;
+
+      const child = logger.child({
+        req: serializeRequest(req, id, peer),
+        ...(ip !== undefined ? { ip } : {}),
+      });
 
       const logged = req as LoggedRequest;
       logged.id = id;
