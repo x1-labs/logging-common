@@ -134,7 +134,20 @@ export function createBunLogger(
       logged.id = id;
       logged.log = child;
 
-      const res = await handler(logged, server);
+      let res: Response;
+      try {
+        res = await handler(logged, server);
+      } catch (err) {
+        if (autoLogging) {
+          // `res` is omitted deliberately: no Response exists, and Bun's error
+          // handler may return any status, so a fabricated 500 would lie.
+          child.info(
+            { err, responseTime: Math.round(performance.now() - start) },
+            'request errored',
+          );
+        }
+        throw err;
+      }
 
       if (autoLogging) {
         child.info(

@@ -225,3 +225,77 @@ describe('createBunLogger client ip', () => {
     expect(req).not.toHaveProperty('remotePort');
   });
 });
+
+describe('createBunLogger error handling', () => {
+  test('logs the real thrown error and rethrows it', async () => {
+    const { lines, stream } = collect();
+    const { wrapFetch } = createBunLogger({ name: 'api', destination: stream });
+
+    const handler = wrapFetch(async () => {
+      throw new Error('kaboom');
+    });
+
+    // The throw must propagate so Bun's own error handler decides the response.
+    await expect(
+      handler(new Request('http://127.0.0.1/boom'), {}),
+    ).rejects.toThrow('kaboom');
+
+    expect(lines).toHaveLength(1);
+    const line = lines[0];
+
+    expect(line.msg).toBe('request errored');
+    // Matches express: the level stays INFO even for a failed request.
+    expect(line.level).toBe('INFO');
+
+    // Unlike express, the error is the real one, not a synthesized
+    // "failed with status code 500".
+    const err = line.err as LogLine;
+    expect(err.type).toBe('Error');
+    expect(err.message).toBe('kaboom');
+    expect(err.stack).toContain('kaboom');
+  });
+
+  test('omits res when no response was produced', async () => {
+    const { lines, stream } = collect();
+    const { wrapFetch } = createBunLogger({ destination: stream });
+    const handler = wrapFetch(async () => {
+      throw new Error('kaboom');
+    });
+
+    await expect(
+      handler(new Request('http://127.0.0.1/boom'), {}),
+    ).rejects.toThrow();
+
+    expect(lines[0]).not.toHaveProperty('res');
+    expect(Object.keys(lines[0])).toEqual([
+      'level',
+      'time',
+      'req',
+      'err',
+      'responseTime',
+      'msg',
+    ]);
+  });
+
+  test('logs 4xx and 5xx responses at INFO with request completed', async () => {
+    const { lines, stream } = collect();
+    const { wrapFetch } = createBunLogger({ destination: stream });
+    const handler = wrapFetch(
+      async (req) =>
+        new Response('nope', {
+          status: new URL(req.url).pathname === '/missing' ? 404 : 500,
+        }),
+    );
+
+    await handler(new Request('http://127.0.0.1/missing'), {});
+    await handler(new Request('http://127.0.0.1/broken'), {});
+
+    expect(lines[0].level).toBe('INFO');
+    expect(lines[0].msg).toBe('request completed');
+    expect((lines[0].res as LogLine).statusCode).toBe(404);
+
+    expect(lines[1].level).toBe('INFO');
+    expect(lines[1].msg).toBe('request completed');
+    expect((lines[1].res as LogLine).statusCode).toBe(500);
+  });
+});
