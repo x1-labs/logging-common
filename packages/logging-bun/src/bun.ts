@@ -97,8 +97,12 @@ export function createBunLogger(
   }
 
   /**
-   * Mirrors the express package's customProps hook: the first x-forwarded-for
-   * entry, falling back to the peer address.
+   * The first x-forwarded-for entry, falling back to the peer address.
+   *
+   * Mirrors the express package's customProps hook, with one deliberate
+   * divergence: express uses `??`, so an x-forwarded-for header that is present
+   * but empty logs `ip: ""`. The `||` below falls back to the peer address in
+   * that case instead, which is never blank.
    */
   function resolveIp(
     req: Request,

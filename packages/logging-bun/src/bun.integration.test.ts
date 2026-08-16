@@ -40,9 +40,9 @@ describe('createBunLogger against a real Bun.serve', () => {
     expect(req.url).toBe('/ok?a=1');
     expect(req.id).toBe(1);
     // The whole point of this test: these come from a real Bun.Server.
-    expect(typeof req.remoteAddress).toBe('string');
+    expect(req.remoteAddress).toBe('127.0.0.1');
     expect(typeof req.remotePort).toBe('number');
-    expect(typeof access!.ip).toBe('string');
+    expect(access!.ip).toBe('127.0.0.1');
 
     expect((access!.res as LogLine).statusCode).toBe(200);
 
