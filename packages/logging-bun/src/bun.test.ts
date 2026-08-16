@@ -299,3 +299,42 @@ describe('createBunLogger error handling', () => {
     expect((lines[1].res as LogLine).statusCode).toBe(500);
   });
 });
+
+describe('createBunLogger autoLogging', () => {
+  test('emits no access line but still provides req.log and req.id', async () => {
+    const { lines, stream } = collect();
+    const { wrapFetch } = createBunLogger({
+      destination: stream,
+      autoLogging: false,
+    });
+
+    const handler = wrapFetch(async (req) => {
+      req.log.info('handler ran');
+      expect(req.id).toBe(1);
+      return new Response('ok');
+    });
+
+    await handler(new Request('http://127.0.0.1/ok'), {});
+
+    // Only the handler's own line; no "request completed".
+    expect(lines).toHaveLength(1);
+    expect(lines[0].msg).toBe('handler ran');
+  });
+
+  test('emits no line when a handler throws', async () => {
+    const { lines, stream } = collect();
+    const { wrapFetch } = createBunLogger({
+      destination: stream,
+      autoLogging: false,
+    });
+    const handler = wrapFetch(async () => {
+      throw new Error('kaboom');
+    });
+
+    await expect(
+      handler(new Request('http://127.0.0.1/boom'), {}),
+    ).rejects.toThrow('kaboom');
+
+    expect(lines).toHaveLength(0);
+  });
+});
