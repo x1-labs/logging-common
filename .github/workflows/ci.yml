@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Cancel superseded runs on the same ref: pushing twice to a PR should not
+# leave the first run burning a runner.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Lint, format, types, build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # `format:check` and `lint:check`, not `format` and `lint`: the latter are
+      # the local fix-it-for-me scripts (`prettier --write`, `eslint --fix`).
+      # `prettier --write` exits 0 unconditionally, so running it here would
+      # rewrite files inside the runner, discard them, and report success --
+      # verifying nothing.
+      # Formatting and lint do not need the built output, so they run first and
+      # fail fast on the cheapest problems.
+      - name: Check formatting
+        run: bun run format:check
+
+      - name: Lint
+        run: bun run lint:check
+
+      # Must precede typecheck. `dist/` is git-ignored, so a fresh checkout has
+      # none, and the dependent packages resolve `@x1-labs/logging` through its
+      # built `dist/index.d.ts` -- without this, typecheck fails with TS2339 on
+      # every option property. Building here also catches an emit failure that
+      # typecheck alone would miss, which matters because `publish-all` runs
+      # this same build.
+      - name: Build
+        run: bun run build
+
+      - name: Typecheck
+        run: bun run typecheck
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # The logging packages resolve `@x1-labs/logging` through each package's
+      # own dist, so the build has to happen before the tests can import it.
+      - name: Build
+        run: bun run build
+
+      - name: Run tests
+        run: bun test packages/*/src
