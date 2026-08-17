@@ -154,12 +154,24 @@ export function createBunLogger(
       }
 
       if (autoLogging) {
+        // pino-http branches on `err || res.statusCode >= 500` and synthesizes
+        // an Error from the status code, so express reports a *returned* 5xx
+        // exactly like a thrown one: `request errored`, still at info, with an
+        // `err`. Mirrored here so one `msg="request errored"` query catches
+        // failures across express and bun services alike.
+        //
+        // `res` stays, unlike the thrown path above -- a Response really does
+        // exist here, and express carries it too.
+        const errored = res.status >= 500;
         child.info(
           {
             res: serializeResponse(res),
+            ...(errored
+              ? { err: new Error(`failed with status code ${res.status}`) }
+              : {}),
             responseTime: Math.round(performance.now() - start),
           },
-          'request completed',
+          errored ? 'request errored' : 'request completed',
         );
       }
 

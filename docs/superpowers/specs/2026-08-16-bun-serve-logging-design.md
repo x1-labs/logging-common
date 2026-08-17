@@ -47,6 +47,15 @@ Three behaviours that had to be measured rather than assumed:
    `pino-http` sets no default `customLogLevel`.
 3. A request that throws logs `"msg":"request errored"` and still at `INFO`.
 
+> **Correction, 2026-08-17.** The original baseline sampled only 200, 404 and a
+> thrown error, and the sections below were written from it. That missed a case:
+> `pino-http` branches on `err || res.statusCode >= 500`, so express reports a
+> *returned* 5xx exactly like a thrown one. Re-measured against a live server:
+> 404 and 499 give `request completed`; 500, 503 and 599 give `request errored`
+> with an `err` synthesized as `failed with status code <code>`, all at `INFO`.
+> See "Returned 5xx" under Behaviour. The package shipped without this and was
+> corrected in 0.1.30.
+
 Field order is `level, time, name, req, ip, res, [err], responseTime, msg`.
 Within `req`: `id, method, url, query, params, headers, remoteAddress, remotePort`.
 Within `res`: `statusCode, headers`.
@@ -176,9 +185,21 @@ actual error. Field name and `msg` are unchanged; only the stack improves.
 `error` handler may return any status, so emitting `statusCode: 500` would be a
 fabrication. Queries for failed requests should match `msg="request errored"`.
 
-**Log level.** Always `info`, for every status. Matches Express exactly, per the
-baseline. A 500 is therefore not distinguishable by level — filter on
-`res.statusCode` instead. No `customLogLevel` option is provided.
+**Returned 5xx.** A handler that *returns* a response with status >= 500 logs
+`msg: 'request errored'` with an `err` synthesized as
+`failed with status code <code>`, mirroring `pino-http`. `res` is kept, unlike
+the thrown path — a `Response` genuinely exists here, and express carries it
+too. Key order is `res, err, responseTime`. Status < 500 is unaffected and still
+logs `request completed` with no `err`.
+
+This matters for services that return errors rather than throwing them: without
+it, a `msg="request errored"` query would find an express service's failures and
+none of a bun service's.
+
+**Log level.** Always `info`, for every status, including the 5xx paths above.
+Matches Express exactly, per the baseline. A 500 is therefore not
+distinguishable by level — filter on `res.statusCode` or `msg` instead. No
+`customLogLevel` option is provided.
 
 **`autoLogging: false`.** Suppresses the access-log line but still attaches
 `req.log` and `req.id`, matching `pino-http`.
