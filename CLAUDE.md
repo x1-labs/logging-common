@@ -46,7 +46,7 @@ No test framework is configured yet. Each package's `tsconfig.build.json` exclud
 
 ### `packages/logging-bun/` — Bun.serve Integration
 
-- **`bun.ts`** — `createBunLogger()`: returns `{ logger, wrapFetch }`. `wrapFetch` wraps a `Bun.serve` fetch handler, attaches a per-request child logger as `req.log`, and emits access log records identical to the Express package's. Errors are logged and rethrown so Bun's own `error` handler decides the response.
+- **`bun.ts`** — `createBunLogger()`: returns `{ logger, wrapFetch }`. `wrapFetch` wraps a `Bun.serve` fetch handler, attaches a per-request child logger as `req.log`, and emits access log records identical to the Express package's. Thrown errors are logged and rethrown so Bun's own `error` handler decides the response; a *returned* status >= 500 logs `request errored` with an error synthesized from the status code, matching `pino-http`.
 - Imports `resolveLogLevel`, `resolveBase`, `resolveLogFormat`, `resolveDestination`, `resolveTimestamp`, `serializeError` and `CreateLoggerOptions` from `@x1-labs/logging`.
 
 ## Key Design Decisions

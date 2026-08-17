@@ -277,26 +277,113 @@ describe('createBunLogger error handling', () => {
     ]);
   });
 
-  test('logs 4xx and 5xx responses at INFO with request completed', async () => {
+  test('logs 4xx responses at INFO with request completed', async () => {
     const { lines, stream } = collect();
     const { wrapFetch } = createBunLogger({ destination: stream });
     const handler = wrapFetch(
-      async (req) =>
-        new Response('nope', {
-          status: new URL(req.url).pathname === '/missing' ? 404 : 500,
-        }),
+      async () => new Response('nope', { status: 404 }),
     );
 
     await handler(new Request('http://127.0.0.1/missing'), {});
-    await handler(new Request('http://127.0.0.1/broken'), {});
 
     expect(lines[0].level).toBe('INFO');
     expect(lines[0].msg).toBe('request completed');
     expect((lines[0].res as LogLine).statusCode).toBe(404);
+    expect(lines[0]).not.toHaveProperty('err');
+  });
+});
 
-    expect(lines[1].level).toBe('INFO');
-    expect(lines[1].msg).toBe('request completed');
-    expect((lines[1].res as LogLine).statusCode).toBe(500);
+// pino-http branches on `err || res.statusCode >= 500`, so express reports a
+// *returned* 5xx exactly like a thrown one: `request errored`, still at INFO,
+// with an Error synthesized from the status code. Verified against a live
+// express server: 499 -> `request completed`; 500/503/599 -> `request errored`
+// with err.message `failed with status code <code>`.
+describe('createBunLogger returned 5xx', () => {
+  test('logs a returned 500 as request errored with a synthesized error', async () => {
+    const { lines, stream } = collect();
+    const { wrapFetch } = createBunLogger({ destination: stream });
+    const handler = wrapFetch(
+      async () => new Response('boom', { status: 500 }),
+    );
+
+    await handler(new Request('http://127.0.0.1/broken'), {});
+
+    expect(lines[0].level).toBe('INFO');
+    expect(lines[0].msg).toBe('request errored');
+
+    const err = lines[0].err as LogLine;
+    expect(err.type).toBe('Error');
+    expect(err.message).toBe('failed with status code 500');
+  });
+
+  test('synthesizes the error from the actual status code', async () => {
+    const { lines, stream } = collect();
+    const { wrapFetch } = createBunLogger({ destination: stream });
+    const handler = wrapFetch(
+      async (req) =>
+        new Response('x', {
+          status: Number(new URL(req.url).pathname.slice(1)),
+        }),
+    );
+
+    await handler(new Request('http://127.0.0.1/503'), {});
+    await handler(new Request('http://127.0.0.1/599'), {});
+
+    expect((lines[0].err as LogLine).message).toBe(
+      'failed with status code 503',
+    );
+    expect((lines[1].err as LogLine).message).toBe(
+      'failed with status code 599',
+    );
+  });
+
+  test('treats 499 as completed, not errored', async () => {
+    const { lines, stream } = collect();
+    const { wrapFetch } = createBunLogger({ destination: stream });
+    const handler = wrapFetch(async () => new Response('x', { status: 499 }));
+
+    await handler(new Request('http://127.0.0.1/499'), {});
+
+    expect(lines[0].msg).toBe('request completed');
+    expect(lines[0]).not.toHaveProperty('err');
+  });
+
+  test('keeps res on a returned 5xx, in express key order', async () => {
+    const { lines, stream } = collect();
+    const { wrapFetch } = createBunLogger({ name: 'api', destination: stream });
+    const handler = wrapFetch(async () => new Response('x', { status: 500 }));
+
+    await handler(new Request('http://127.0.0.1/broken'), {});
+
+    // Unlike the thrown path, a Response exists here, so `res` is real and is
+    // reported -- matching express, which also carries res on a returned 5xx.
+    expect((lines[0].res as LogLine).statusCode).toBe(500);
+    expect(Object.keys(lines[0])).toEqual([
+      'level',
+      'time',
+      'name',
+      'req',
+      'res',
+      'err',
+      'responseTime',
+      'msg',
+    ]);
+  });
+
+  test('leaves the thrown path carrying the real error and no res', async () => {
+    const { lines, stream } = collect();
+    const { wrapFetch } = createBunLogger({ destination: stream });
+    const handler = wrapFetch(async () => {
+      throw new Error('database connection lost');
+    });
+
+    await expect(
+      handler(new Request('http://127.0.0.1/boom'), {}),
+    ).rejects.toThrow('database connection lost');
+
+    expect(lines[0].msg).toBe('request errored');
+    expect((lines[0].err as LogLine).message).toBe('database connection lost');
+    expect(lines[0]).not.toHaveProperty('res');
   });
 });
 
