@@ -4,11 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Bun workspace monorepo containing three packages:
+Bun workspace monorepo containing four packages:
 
 - **`@x1-labs/logging`** (`packages/logging/`) — Pino-based logger factory for Node.js applications. No NestJS dependency.
 - **`@x1-labs/logging-nestjs`** (`packages/logging-nestjs/`) — NestJS integration module. Depends on `@x1-labs/logging` and has `nestjs-pino` + `@nestjs/common` as peer dependencies.
 - **`@x1-labs/logging-express`** (`packages/logging-express/`) — Express `pino-http` middleware. Depends on `@x1-labs/logging` and has `express` + `pino-http` as peer dependencies.
+- **`@x1-labs/logging-bun`** (`packages/logging-bun/`) — `Bun.serve` access logging middleware. Depends on `@x1-labs/logging`, has `pino-pretty` as an optional peer dependency.
 
 ## Commands
 
@@ -43,9 +44,14 @@ No test framework is configured yet. Each package's `tsconfig.build.json` exclud
 - **`express.ts`** — `createExpressLogger()`: returns `pino-http` middleware for Express apps. Supports custom level, format, auto-logging, forwarded IP extraction, and arbitrary pino/pino-http options.
 - Imports `resolveLogLevel`, `resolveBase`, and `CreateLoggerOptions` from `@x1-labs/logging`.
 
+### `packages/logging-bun/` — Bun.serve Integration
+
+- **`bun.ts`** — `createBunLogger()`: returns `{ logger, wrapFetch }`. `wrapFetch` wraps a `Bun.serve` fetch handler, attaches a per-request child logger as `req.log`, and emits access log records identical to the Express package's. Errors are logged and rethrown so Bun's own `error` handler decides the response.
+- Imports `resolveLogLevel`, `resolveBase`, `resolveLogFormat`, `resolveDestination`, `resolveTimestamp`, `serializeError` and `CreateLoggerOptions` from `@x1-labs/logging`.
+
 ## Key Design Decisions
 
-- **Three-package split**: projects without a framework depend only on `@x1-labs/logging`; NestJS projects add `@x1-labs/logging-nestjs`; Express projects add `@x1-labs/logging-express`.
+- **Four-package split**: projects without a framework depend only on `@x1-labs/logging`; NestJS projects add `@x1-labs/logging-nestjs`; Express projects add `@x1-labs/logging-express`; Bun.serve projects add `@x1-labs/logging-bun`.
 - **Workspace linking**: `@x1-labs/logging-nestjs` depends on `@x1-labs/logging` via `workspace:*`.
 - **Shared tooling**: eslint, prettier, typescript, and all NestJS/pino dev dependencies live in the root `package.json`. Individual packages only declare their runtime/peer dependencies.
 - **Environment-driven config**: log level via `LOG_LEVEL`, format via `LOG_FORMAT` (`json`, `logfmt`, or `pretty`), base field omission via `LOG_OMIT_FIELDS` (defaults to `pid,hostname`), timestamp inclusion via `LOG_TIMESTAMP` (defaults to `true`), dev detection via `NODE_ENV=development`.

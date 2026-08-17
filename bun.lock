@@ -28,16 +28,30 @@
     },
     "packages/logging": {
       "name": "@x1-labs/logging",
-      "version": "0.1.23",
+      "version": "0.1.28",
       "dependencies": {
         "pino": "^10.3.0",
         "pino-abstract-transport": "^2.0.0",
         "pino-pretty": "^13.0.0",
       },
     },
+    "packages/logging-bun": {
+      "name": "@x1-labs/logging-bun",
+      "version": "0.1.28",
+      "dependencies": {
+        "@x1-labs/logging": "^0.1.28",
+        "pino": "^10.0.0",
+      },
+      "peerDependencies": {
+        "pino-pretty": "^13.0.0",
+      },
+      "optionalPeers": [
+        "pino-pretty",
+      ],
+    },
     "packages/logging-express": {
       "name": "@x1-labs/logging-express",
-      "version": "0.1.24",
+      "version": "0.1.28",
       "dependencies": {
         "@x1-labs/logging": "^0.1.23",
         "pino": "^10.0.0",
@@ -53,7 +67,7 @@
     },
     "packages/logging-nestjs": {
       "name": "@x1-labs/logging-nestjs",
-      "version": "0.1.23",
+      "version": "0.1.28",
       "dependencies": {
         "@x1-labs/logging": "^0.1.6",
       },
@@ -159,6 +173,8 @@
     "@typescript-eslint/visitor-keys": ["@typescript-eslint/visitor-keys@8.54.0", "", { "dependencies": { "@typescript-eslint/types": "8.54.0", "eslint-visitor-keys": "^4.2.1" } }, "sha512-VFlhGSl4opC0bprJiItPQ1RfUhGDIBokcPwaFH4yiBCaNPeld/9VeXbiPO1cLyorQi1G1vL+ecBk1x8o1axORA=="],
 
     "@x1-labs/logging": ["@x1-labs/logging@workspace:packages/logging"],
+
+    "@x1-labs/logging-bun": ["@x1-labs/logging-bun@workspace:packages/logging-bun"],
 
     "@x1-labs/logging-express": ["@x1-labs/logging-express@workspace:packages/logging-express"],
 

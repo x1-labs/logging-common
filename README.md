@@ -9,6 +9,7 @@ Shared pino-based logging packages for X1 Labs TypeScript services.
 | [`@x1-labs/logging`](packages/logging/)                 | Pino logger factory (Node.js + browser) | `pino-pretty` (optional)                                  |
 | [`@x1-labs/logging-nestjs`](packages/logging-nestjs/)   | NestJS integration module               | `nestjs-pino`, `@nestjs/common`, `pino-pretty` (optional) |
 | [`@x1-labs/logging-express`](packages/logging-express/) | Express pino-http middleware            | `express`, `pino-http`, `pino-pretty` (optional)          |
+| [`@x1-labs/logging-bun`](packages/logging-bun/)         | Bun.serve access logging middleware     | `pino-pretty` (optional)                                  |
 
 ## Installation
 
@@ -21,6 +22,9 @@ npm install @x1-labs/logging-nestjs nestjs-pino @nestjs/common
 
 # Express projects
 npm install @x1-labs/logging-express pino-http express
+
+# Bun.serve projects
+npm install @x1-labs/logging-bun
 
 # Optional: pretty-printed dev output
 npm install -D pino-pretty
@@ -47,6 +51,26 @@ import { createExpressLogger } from '@x1-labs/logging-express';
 const app = express();
 app.use(createExpressLogger({ level: 'debug' }));
 ```
+
+### Bun.serve
+
+```ts
+import { createBunLogger } from '@x1-labs/logging-bun';
+
+const { logger, wrapFetch } = createBunLogger({ name: 'api' });
+
+Bun.serve({
+  port: 3000,
+  fetch: wrapFetch(async (req) => {
+    req.log.info({ userId: 42 }, 'handling request');
+    return new Response('ok');
+  }),
+});
+
+logger.info({ port: 3000 }, 'API server listening');
+```
+
+Produces the same access log records as `@x1-labs/logging-express`.
 
 ### NestJS module
 

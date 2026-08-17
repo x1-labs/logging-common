@@ -16,7 +16,7 @@ for f in packages/*/package.json; do
 done
 
 # Update @x1-labs/logging dependency in nested packages
-for f in packages/logging-nestjs/package.json packages/logging-express/package.json; do
+for f in packages/logging-*/package.json; do
   perl -i -pe "s/\"\\@x1-labs\\/logging\": \"\\^[^\"]*\"/\"\\@x1-labs\\/logging\": \"^$VERSION\"/" "$f"
   echo "Updated @x1-labs/logging dependency in $f to ^$VERSION"
 done
