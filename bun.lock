@@ -28,7 +28,7 @@
     },
     "packages/logging": {
       "name": "@x1-labs/logging",
-      "version": "0.1.28",
+      "version": "0.1.30",
       "dependencies": {
         "pino": "^10.3.0",
         "pino-abstract-transport": "^2.0.0",
@@ -37,9 +37,9 @@
     },
     "packages/logging-bun": {
       "name": "@x1-labs/logging-bun",
-      "version": "0.1.28",
+      "version": "0.1.30",
       "dependencies": {
-        "@x1-labs/logging": "^0.1.28",
+        "@x1-labs/logging": "^0.1.30",
         "pino": "^10.0.0",
       },
       "peerDependencies": {
@@ -51,9 +51,9 @@
     },
     "packages/logging-express": {
       "name": "@x1-labs/logging-express",
-      "version": "0.1.28",
+      "version": "0.1.30",
       "dependencies": {
-        "@x1-labs/logging": "^0.1.23",
+        "@x1-labs/logging": "^0.1.30",
         "pino": "^10.0.0",
         "pino-http": "^10.0.0",
       },
@@ -67,9 +67,9 @@
     },
     "packages/logging-nestjs": {
       "name": "@x1-labs/logging-nestjs",
-      "version": "0.1.28",
+      "version": "0.1.30",
       "dependencies": {
-        "@x1-labs/logging": "^0.1.6",
+        "@x1-labs/logging": "^0.1.30",
       },
       "peerDependencies": {
         "@nestjs/common": "^9.0.0 || ^10.0.0 || ^11.0.0",
