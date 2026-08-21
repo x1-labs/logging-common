@@ -37,10 +37,18 @@ read-only variants CI uses are `lint:check` and `format:check`.
 - **Adapters never import each other.** They depend only on the core. Keeping
   that edge one-directional is what lets a consumer install a single adapter
   without pulling in NestJS, Express, and Bun types.
-- **Framework deps are peer deps.** `nestjs-pino`, `@nestjs/common`, `express`,
-  `pino-http`, and `pino-pretty` belong in `peerDependencies` on the adapters
-  and in `devDependencies` at the root only. Promoting one to a real dependency
-  makes every consumer install a framework they may not use.
+- **The framework itself is a peer dep; the pino glue is not.** `express`,
+  `@nestjs/common`, and `nestjs-pino` are `peerDependencies` of their adapter,
+  so a consumer brings their own copy rather than installing a second one.
+  `pino`, `pino-http`, and `pino-abstract-transport` are ordinary
+  `dependencies` — they are this library's implementation, not the host app's.
+  `pino-pretty` is both: a real dependency of the core, and an *optional* peer
+  on each adapter. Moving a framework into `dependencies` makes every consumer
+  install a framework they may not use.
+- **Peer ranges widen, they never shift.** `^4.0.0 || ^5.0.0` supports both
+  Express majors at once. Replacing a peer range rather than adding to it is a
+  breaking change for everyone on the old major, so a new framework version is
+  a deliberate edit — Dependabot bumps the root devDependency, not these.
 
 ## Configuration contract
 

@@ -10,11 +10,12 @@ updates:
   # bun.lock, which is where every packages/* dependency is pinned.
   # Per-package entries would open duplicate PRs against the same lock.
   #
-  # Note that the adapters' framework deps (@nestjs/common, express,
-  # pino-http, pino-pretty) are peerDependencies and are deliberately not
-  # bumped here -- widening a peer range is a consumer-facing decision, not
-  # a routine update. They are also root devDependencies, so their bumps
-  # arrive through that path and the peer ranges stay a manual call.
+  # The adapters' peerDependencies (express, @nestjs/common, nestjs-pino,
+  # and the optional pino-pretty) are not managed here. Those ranges are
+  # deliberately wide -- "^4.0.0 || ^5.0.0" -- and replacing one rather than
+  # adding to it breaks every consumer on the old major, so they stay a
+  # manual edit. Dependabot bumps the same packages as root devDependencies,
+  # which is how a new framework version shows up for testing.
   - package-ecosystem: "bun"
     directory: "/"
     schedule:
@@ -24,8 +25,17 @@ updates:
       # Tooling churns fastest and carries the least risk -- eslint,
       # prettier, typescript, and the @types/* packages never ship in the
       # published artifacts. Batching keeps them to one reviewable PR.
+      #
+      # Restricted to minor and patch on purpose. Without this, the group
+      # swept four majors into a single PR (typescript 5->7, eslint 9->10,
+      # @eslint/js 9->10, @types/node 22->26) which failed outright, since
+      # typescript-eslint does not support TS 7 yet. A major needs its own
+      # PR and a changelog read; batching one is how it gets rubber-stamped.
       dev-dependencies:
         dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
       # pino and its transports are the actual runtime surface. Grouped
       # only for minor/patch; a major arrives as its own PR because it can
       # change log output, which is a breaking change for consumers.
