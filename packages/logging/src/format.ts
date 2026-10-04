@@ -1,6 +1,8 @@
 import pino from 'pino';
 import type { DestinationStream } from 'pino';
 import pinoPretty from 'pino-pretty';
+import { formatLogfmt } from './logfmt';
+import type { LogObject } from './logfmt';
 
 export type LogFormat = 'json' | 'logfmt' | 'pretty';
 
@@ -55,86 +57,6 @@ export function resolveTimestamp(
     : false;
 }
 
-type LogObject = Record<string, unknown>;
-
-/**
- * Stringify an object to logfmt format.
- */
-function stringifyLogfmt(data: LogObject): string {
-  let line = '';
-
-  for (const key in data) {
-    const raw = data[key];
-    let value: string;
-
-    if (raw == null) {
-      value = '';
-    } else {
-      value = String(raw);
-    }
-
-    const hasNewlines = value.includes('\n') || value.includes('\r');
-    const needsQuoting = value.includes(' ') || value.includes('=');
-    const needsEscaping = value.includes('"') || value.includes('\\');
-
-    // Escape backslashes and quotes first
-    if (needsEscaping) value = value.replace(/["\\]/g, '\\$&');
-    // Then escape newlines to keep log on single line
-    if (hasNewlines) {
-      value = value
-        .replace(/\r\n/g, '\\n')
-        .replace(/\n/g, '\\n')
-        .replace(/\r/g, '\\r');
-    }
-    if (needsQuoting || needsEscaping || hasNewlines) value = '"' + value + '"';
-    if (value === '' && raw != null) value = '""';
-
-    line += key + '=' + value + ' ';
-  }
-
-  return line.trimEnd();
-}
-
-/**
- * Flatten a nested object into a flat key-value object.
- */
-function flattenObject(
-  source: LogObject,
-  separator = '_',
-  prefixes: string[] = [],
-): LogObject {
-  const output: LogObject = {};
-
-  for (const key in source) {
-    const value = source[key];
-
-    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-      Object.assign(
-        output,
-        flattenObject(value as LogObject, separator, [...prefixes, key]),
-      );
-    } else {
-      output[[...prefixes, key].join(separator)] = value;
-    }
-  }
-
-  return output;
-}
-
-/**
- * Reorder object keys to: time, level, name, msg, ...rest
- */
-function reorderKeys(obj: LogObject): LogObject {
-  const { time, level, name, msg, ...rest } = obj;
-  return {
-    ...(time !== undefined && { time }),
-    ...(level !== undefined && { level }),
-    ...(name !== undefined && { name }),
-    ...(msg !== undefined && { msg }),
-    ...rest,
-  };
-}
-
 /**
  * Create a logfmt destination stream.
  */
@@ -142,15 +64,10 @@ function createLogfmtStream(flattenNestedObjects: boolean): DestinationStream {
   return {
     write(chunk: string): void {
       try {
-        let obj = JSON.parse(chunk) as LogObject;
-
-        if (flattenNestedObjects) {
-          obj = flattenObject(obj);
-        }
-
-        obj = reorderKeys(obj);
-
-        process.stdout.write(stringifyLogfmt(obj) + '\n');
+        const record = JSON.parse(chunk) as LogObject;
+        process.stdout.write(
+          formatLogfmt(record, { flattenNestedObjects }) + '\n',
+        );
       } catch {
         // If parsing fails, write the raw chunk
         process.stdout.write(chunk);
