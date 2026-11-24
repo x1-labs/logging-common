@@ -14,11 +14,18 @@
     "dependencyDashboardApproval": true
   },
   "enabledManagers": ["bun", "github-actions"],
+  "bun": {
+    "lockFileMaintenance": {
+      "enabled": true,
+      "schedule": ["before 9am on the first day of the month"]
+    }
+  },
   "packageRules": [
     {
-      "description": "Renovate cannot read locked versions from bun.lock. Bump the range, or it skips updates inside the current range.",
+      "description": "A published library: bump only dev dependencies, so consumers keep their version floors. Lockfile maintenance refreshes the rest. Renovate cannot read locked versions from bun.lock (renovatebot/renovate#47856).",
       "matchManagers": ["bun"],
-      "rangeStrategy": "bump"
+      "rangeStrategy": "bump",
+      "matchDepTypes": ["devDependencies"]
     },
     {
       "description": "Non-major JavaScript updates in one PR.",
