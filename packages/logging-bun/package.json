@@ -1,6 +1,6 @@
 {
   "name": "@x1-labs/logging-bun",
-  "version": "0.1.31",
+  "version": "0.1.32",
   "description": "Bun.serve access logging middleware",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,7 +24,7 @@
     "check": "bun run lint && bun run typecheck && bun run format --check"
   },
   "dependencies": {
-    "@x1-labs/logging": "^0.1.31",
+    "@x1-labs/logging": "^0.1.32",
     "pino": "^10.3.1"
   },
   "peerDependencies": {

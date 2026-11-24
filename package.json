@@ -26,7 +26,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
     "express": "^5.1.0",
-    "nestjs-pino": "^4.5.0",
+    "nestjs-pino": "^5.3.2",
     "pino": "^10.3.1",
     "pino-http": "^11.0.0",
     "pino-logfmt": "^1.0.1",
