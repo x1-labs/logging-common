@@ -14,7 +14,7 @@
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-prettier": "^5.5.5",
         "express": "^5.1.0",
-        "nestjs-pino": "^4.5.0",
+        "nestjs-pino": "^5.3.2",
         "pino": "^10.3.1",
         "pino-http": "^11.0.0",
         "pino-logfmt": "^1.0.1",
@@ -28,7 +28,7 @@
     },
     "packages/logging": {
       "name": "@x1-labs/logging",
-      "version": "0.1.31",
+      "version": "0.1.32",
       "dependencies": {
         "pino": "^10.3.1",
         "pino-abstract-transport": "^3.0.0",
@@ -37,9 +37,9 @@
     },
     "packages/logging-bun": {
       "name": "@x1-labs/logging-bun",
-      "version": "0.1.31",
+      "version": "0.1.32",
       "dependencies": {
-        "@x1-labs/logging": "^0.1.31",
+        "@x1-labs/logging": "^0.1.32",
         "pino": "^10.3.1",
       },
       "peerDependencies": {
@@ -51,9 +51,9 @@
     },
     "packages/logging-express": {
       "name": "@x1-labs/logging-express",
-      "version": "0.1.31",
+      "version": "0.1.32",
       "dependencies": {
-        "@x1-labs/logging": "^0.1.31",
+        "@x1-labs/logging": "^0.1.32",
         "pino": "^10.3.1",
         "pino-http": "^11.0.0",
       },
@@ -67,13 +67,13 @@
     },
     "packages/logging-nestjs": {
       "name": "@x1-labs/logging-nestjs",
-      "version": "0.1.31",
+      "version": "0.1.32",
       "dependencies": {
-        "@x1-labs/logging": "^0.1.31",
+        "@x1-labs/logging": "^0.1.32",
       },
       "peerDependencies": {
         "@nestjs/common": "^9.0.0 || ^10.0.0 || ^11.0.0",
-        "nestjs-pino": "^3.0.0 || ^4.0.0",
+        "nestjs-pino": "^3.0.0 || ^4.0.0 || ^5.0.0",
         "pino-pretty": "^13.0.0",
       },
       "optionalPeers": [
@@ -404,7 +404,7 @@
 
     "negotiator": ["negotiator@1.0.0", "", {}, "sha512-8Ofs/AUQh8MaEcrlq5xOX0CQ9ypTF5dl78mjlMNfOK08fzpgTHQRQPBxcPlEtIw0yRpws+Zo/3r+5WRby7u3Gg=="],
 
-    "nestjs-pino": ["nestjs-pino@4.5.0", "", { "peerDependencies": { "@nestjs/common": "^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0", "pino": "^7.5.0 || ^8.0.0 || ^9.0.0 || ^10.0.0", "pino-http": "^6.4.0 || ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0", "rxjs": "^7.1.0" } }, "sha512-e54ChJMACSGF8gPYaHsuD07RW7l/OVoV6aI8Hqhpp0ZQ4WA8QY3eewL42JX7Z1U6rV7byNU7bGBV9l6d9V6PDQ=="],
+    "nestjs-pino": ["nestjs-pino@5.3.2", "", { "peerDependencies": { "@nestjs/common": "^11.0.8 || ^12.0.2", "@nestjs/core": "^11.0.8 || ^12.0.2", "pino": "^10.0.0", "pino-http": "^11.0.0", "rxjs": "^7.1.0" } }, "sha512-Exc8ZVbubM+OVRJJRvXfxhLY4KCxrjLk/7tARYm/9uvpoes4tWWMjUMd1ayD/ZwxZWpYyZmUkxJJ4YSLOqpqMg=="],
 
     "object-inspect": ["object-inspect@1.13.4", "", {}, "sha512-W67iLl4J2EXEGTbfeHCffrjDfitvLANg0UlX3wFUUSTx92KXRFegMHUVgSqE+wvhAbi4WqjGg9czysTV2Epbew=="],
 

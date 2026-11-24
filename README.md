@@ -18,7 +18,7 @@ Shared pino-based logging packages for X1 Labs TypeScript services.
 npm install @x1-labs/logging
 
 # NestJS projects
-npm install @x1-labs/logging-nestjs nestjs-pino @nestjs/common
+npm install @x1-labs/logging-nestjs nestjs-pino@^5 @nestjs/common
 
 # Express projects
 npm install @x1-labs/logging-express pino-http express
@@ -83,6 +83,10 @@ import { createNestLoggerModule } from '@x1-labs/logging-nestjs';
 })
 export class AppModule {}
 ```
+
+`nestjs-pino` 3, 4 and 5 work. On NestJS 11.0.8 or later, use `nestjs-pino` 5. With 4 and a global prefix (`app.setGlobalPrefix('v1')`), NestJS logs `Unsupported route path: "/v1/*"` at startup. Version 5 uses the new route syntax, and also logs requests to the prefix root (`/v1`).
+
+`nestjs-pino` 5.2.1 and later ship separate CommonJS and ESM builds. This package is CommonJS, so the app must load `nestjs-pino` as CommonJS too (a NestJS app built with `nest build` does). An ESM app gets a second copy of `nestjs-pino`, and `app.get(Logger)` fails with `Nest could not find Logger element`.
 
 ## Configuration
 
